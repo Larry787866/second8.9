@@ -41,10 +41,52 @@ static void blink(led_config_t config)
     HAL_Delay(config.led_off_time);
 }       
 
+typedef enum {
+    MODE_SEQ,   /* 逐个亮灭 */
+    MODE_PAIR,  /* 两两亮灭 */
+    MODE_ALL    /* 一起亮灭 */
+} flow_mode_t;
+
+static int signal = 0;
+
 void led_running(void)
 {
-    for (uint8_t i = 0; i < LED_COUNT; i++) {
-        led_config_t config = {.led_num = i, .led_on_time = 250U, .led_off_time = 250U};
-        blink(config);
+    switch (signal)                     /* 状态机:按 signal 选模式 */
+    {
+        case MODE_SEQ:                  
+            for (uint8_t i = 0; i < LED_COUNT; i++) {
+                led_config_t config = {.led_num = i, .led_on_time = 250U, .led_off_time = 250U};
+                blink(config);
+            }
+            break;
+
+        case MODE_PAIR:                 
+            for (uint8_t i = 0; i < LED_COUNT; i += 2) {
+                led_on(i);
+                led_on(i + 1);
+                HAL_Delay(500U);
+                led_off(i);
+                led_off(i + 1);
+                HAL_Delay(500U);
+            }
+            break;
+
+        case MODE_ALL:                 
+            for (uint8_t i = 0; i < LED_COUNT; i++) {
+                led_on(i);
+            }
+            HAL_Delay(500U);
+            for (uint8_t i = 0; i < LED_COUNT; i++) {
+                led_off(i);
+            }
+            HAL_Delay(500U);
+            break;
+
+        default:
+            break;
     }
 }
+
+
+
+        
