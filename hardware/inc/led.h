@@ -19,6 +19,8 @@ extern "C" {
 #define LED3_PIN      GPIO_PIN_6
 #define LED4_PIN      GPIO_PIN_7
 
+void led_running(void);
+
 /* 种子工程先提供无参数版本，只操作 LED1；题目 1 将其扩展为带编号参数版本 */
 
 void led_on(uint8_t led_num);

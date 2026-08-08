@@ -27,3 +27,13 @@ void led_off(uint8_t led_num)
 
     HAL_GPIO_WritePin(LED_GPIO_PORT, led_pins[led_num], GPIO_PIN_RESET);
 }
+
+void led_running(void)
+{
+    for (uint8_t i = 0; i < LED_COUNT; i++) {
+        led_on(i);
+        HAL_Delay(100U);
+        led_off(i);
+        HAL_Delay(100U);
+    }
+}
