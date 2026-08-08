@@ -21,10 +21,13 @@ extern "C" {
 
 void led_running(void);
 
-/* 种子工程先提供无参数版本，只操作 LED1；题目 1 将其扩展为带编号参数版本 */
+typedef struct {
+    uint8_t led_num; 
+    uint64_t led_on_time;
+    uint64_t led_off_time; 
+} led_config_t;
 
-void led_on(uint8_t led_num);
-void led_off(uint8_t led_num);
+/* 种子工程先提供无参数版本，只操作 LED1；题目 1 将其扩展为带编号参数版本 */
 
 #ifdef __cplusplus
 }
