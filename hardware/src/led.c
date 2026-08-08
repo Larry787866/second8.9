@@ -3,19 +3,23 @@
  * @brief   LED 驱动实现文件。
  */
 #include "led.h"
+#include "buzzer.h"
 
 static const uint16_t led_pins[] = {LED1_PIN, LED2_PIN, LED3_PIN, LED4_PIN};
 static uint8_t step  = 0;    /* 当前这组灯的第一个编号 */
 static uint8_t phase = 0;    /* 0=该亮了, 1=该灭了 */
 static tick_timer_t tmr;     /* 计时器 */
+static tick_timer_t buz_tmr;  /* 蜂鸣器计时器 */
 
 #define IS_VALID_LED(id) ((id) < LED_COUNT)
 #define LED_COUNT 4U
+typedef struct {
+    uint32_t on_time;    
+    uint32_t off_time;   
+} ring_cfg_t;            
 
-/* ── 单次触发计时器 ─────────────────────────────
- * 启动后经过 period 毫秒触发一次;触发后失效,
- * 必须再次 timer_start 才会重新触发(单次触发语义) */
-
+static const ring_cfg_t ring_long  = {200U, 800U};  
+static const ring_cfg_t ring_short = { 50U, 100U};  
 static void timer_start(tick_timer_t *t, uint32_t ms)
 {
     t->start  = HAL_GetTick();
@@ -90,10 +94,30 @@ static void blink(uint8_t led_num, uint8_t group, uint32_t on_ms, uint32_t off_m
     }
 }
 
+static uint8_t ring_phase = 0;   
+static void Ring(uint32_t on_time, uint32_t off_time)
+{
+    if (!timer_expired(&buz_tmr)) {
+        return;                    
+    }
+
+    if (ring_phase == 0) {                 
+        buzzer_on();
+        timer_start(&buz_tmr, on_time);     
+        ring_phase = 1;
+    } else {                         
+        buzzer_off();
+        timer_start(&buz_tmr, off_time);    
+        ring_phase = 0;
+    }
+}
+
 void led_running(void)
 {
-    /* ① 信号变了 → 立刻切新模式 */
     if ((flow_mode_t)signal != current_mode) {
+        buzzer_off();            
+        ring_phase = 0;          
+        timer_start(&buz_tmr, 1U);  
         current_mode = (flow_mode_t)signal;
         step  = 0;
         phase = 0;
@@ -118,9 +142,13 @@ void led_running(void)
             break;
         case MODE_PAIR:
             blink(step, 2,     500U, 500U);   /* 一次 2 颗 */
+            Ring(ring_long.on_time,  ring_long.off_time);  
+
             break;
         case MODE_ALL:
             blink(0, LED_COUNT, 500U, 500U);  /* 一次 4 颗 */
+            Ring(ring_short.on_time, ring_short.off_time);  
+
             break;
         default:
             break;

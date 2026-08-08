@@ -27,6 +27,13 @@ typedef struct {
     uint8_t  active;   /* 1=计时中, 0=已失效 */
 } tick_timer_t;
 
+typedef struct {
+    uint32_t ring_on_time_long;  
+    uint32_t ring_off_time_long; 
+    uint32_t ring_on_time_short;  
+    uint32_t ring_off_time_short; 
+} ring_led_t;
+
 /* 种子工程先提供无参数版本，只操作 LED1；题目 1 将其扩展为带编号参数版本 */
 
 #ifdef __cplusplus
