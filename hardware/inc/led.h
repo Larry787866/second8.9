@@ -22,10 +22,10 @@ extern "C" {
 void led_running(void);
 
 typedef struct {
-    uint8_t led_num; 
-    uint64_t led_on_time;
-    uint64_t led_off_time; 
-} led_config_t;
+    uint32_t start;    /* 启动时刻(HAL_GetTick) */
+    uint32_t period;   /* 时长(ms) */
+    uint8_t  active;   /* 1=计时中, 0=已失效 */
+} tick_timer_t;
 
 /* 种子工程先提供无参数版本，只操作 LED1；题目 1 将其扩展为带编号参数版本 */
 
